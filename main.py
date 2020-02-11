@@ -1,4 +1,5 @@
 import sys
+import time
 
 import pygame
 
@@ -10,7 +11,7 @@ from line import Line
 
 
 FPS = 60
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1024, 768
 COLORS = (pygame.Color('white'), pygame.Color('yellow'), pygame.Color('black'))
 screen, clock = None, None
 
@@ -20,19 +21,28 @@ def terminate():
     sys.exit()
 
 
+def timer(seconds_cnt):
+    font = pygame.font.Font(None, 120)
+    while seconds_cnt >= 0:
+        timer_counter = font.render(str(seconds_cnt), 1, COLORS[0], COLORS[2])
+        timer_counter_rect = timer_counter.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
+        screen.blit(timer_counter, timer_counter_rect)
+        pygame.display.flip()
+        seconds_cnt -= 1
+        time.sleep(1)
+
+
 def start_menu():
     background = pygame.transform.scale(load_image('background.jpg'), (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
     font = pygame.font.Font(None, 80)
 
     start_button = font.render('Начать игру', 1, COLORS[0], COLORS[2])
-    start_button_rect = start_button.get_rect()
-    start_button_rect.center = (WIDTH // 2, HEIGHT // 2 - 60)
+    start_button_rect = start_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 60))
     screen.blit(start_button, start_button_rect)
 
     quit_button = font.render('Выйти на рабочий стол', 1, COLORS[0], COLORS[2])
-    quit_button_rect = quit_button.get_rect()
-    quit_button_rect.center = (WIDTH // 2, HEIGHT // 2 + 60)
+    quit_button_rect = quit_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
     screen.blit(quit_button, quit_button_rect)
 
     while True:
@@ -69,24 +79,81 @@ def start_menu():
         clock.tick(FPS)
 
 
+def pause_menu():
+    background = pygame.transform.scale(load_image('background.jpg'), (WIDTH, HEIGHT))
+    screen.blit(background, (0, 0))
+    font = pygame.font.Font(None, 60)
+
+    pause_text = font.render('Пауза', 1, COLORS[0], COLORS[2])
+    pause_text_rect = pause_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 150))
+    screen.blit(pause_text, pause_text_rect)
+
+    continue_button = font.render('Продолжить', 1, COLORS[0], COLORS[2])
+    continue_button_rect = continue_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+    screen.blit(continue_button, continue_button_rect)
+
+    restart_button = font.render('Начать заново', 1, COLORS[0], COLORS[2])
+    restart_button_rect = restart_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+    screen.blit(restart_button, restart_button_rect)
+
+    exit_button = font.render('Выйти', 1, COLORS[0], COLORS[2])
+    exit_button_rect = exit_button.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 150))
+    screen.blit(exit_button, exit_button_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+            elif event.type == pygame.MOUSEMOTION:
+                if continue_button_rect.collidepoint(event.pos):
+                    continue_button = font.render('Продолжить', 1, COLORS[1], COLORS[2])
+                else:
+                    continue_button = font.render('Продолжить', 1, COLORS[0], COLORS[2])
+
+                if restart_button_rect.collidepoint(event.pos):
+                    restart_button = font.render('Начать заново', 1, COLORS[1], COLORS[2])
+                else:
+                    restart_button = font.render('Начать заново', 1, COLORS[0], COLORS[2])
+
+                if exit_button_rect.collidepoint(event.pos):
+                    exit_button = font.render('Выйти', 1, COLORS[1], COLORS[2])
+                else:
+                    exit_button = font.render('Выйти', 1, COLORS[0], COLORS[2])
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if continue_button_rect.collidepoint(event.pos):
+                    return 0
+                elif restart_button_rect.collidepoint(event.pos):
+                    return 1
+                elif exit_button_rect.collidepoint(event.pos):
+                    exit_screen()
+
+        screen.blit(background, (0, 0))
+        screen.blit(pause_text, pause_text_rect)
+        screen.blit(continue_button, continue_button_rect)
+        screen.blit(restart_button, restart_button_rect)
+        screen.blit(exit_button, exit_button_rect)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def exit_screen():
     background = pygame.transform.scale(load_image('background.jpg'), (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
     font = pygame.font.Font(None, 60)
 
     exit_question = font.render('Вы уверены, что хотите выйти?', 1, COLORS[0], COLORS[2])
-    exit_question_rect = exit_question.get_rect()
-    exit_question_rect.center = (WIDTH // 2, HEIGHT // 2 - 30)
+    exit_question_rect = exit_question.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 30))
     screen.blit(exit_question, exit_question_rect)
 
     yes_button = font.render('Да', 1, COLORS[0], COLORS[2])
-    yes_button_rect = yes_button.get_rect()
-    yes_button_rect.center = (WIDTH // 2 - 50, HEIGHT // 2 + 30)
+    yes_button_rect = yes_button.get_rect(center=(WIDTH // 2 - 50, HEIGHT // 2 + 30))
     screen.blit(yes_button, yes_button_rect)
 
     no_button = font.render('Нет', 1, COLORS[0], COLORS[2])
-    no_button_rect = no_button.get_rect()
-    no_button_rect.center = (WIDTH // 2 + 50, HEIGHT // 2 + 30)
+    no_button_rect = no_button.get_rect(center=(WIDTH // 2 + 50, HEIGHT // 2 + 30))
     screen.blit(no_button, no_button_rect)
 
     while True:
@@ -142,12 +209,12 @@ def game():
     paddles.add(left_paddle, right_paddle)
     paddles.draw(screen)
 
-    ball = Ball((WIDTH // 2, HEIGHT // 2), 7, 30, COLORS[0])
+    ball = Ball((WIDTH // 2, HEIGHT // 2), 7, 25, COLORS[0])
     screen.blit(ball.image, ball.rect)
 
     score_counters = pygame.sprite.Group()
-    left_counter = ScoreCounter((200, HEIGHT // 2 - 200), 0, font, COLORS[0])
-    right_counter = ScoreCounter((WIDTH - 200, HEIGHT // 2 - 200), 0, font, COLORS[0])
+    left_counter = ScoreCounter((WIDTH // 2 - 100, 100), 0, font, COLORS[0])
+    right_counter = ScoreCounter((WIDTH // 2 + 100, 100), 0, font, COLORS[0])
     score_counters.add(left_counter, right_counter)
     score_counters.draw(screen)
 
@@ -158,7 +225,10 @@ def game():
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    exit_screen()
+                    pause_result = pause_menu()
+                    if pause_result == 1:
+                        return 0
+                    # timer(3)
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
@@ -189,6 +259,7 @@ def game():
                 return -1
             left_paddle.set_default_pos()
             right_paddle.set_default_pos()
+            # timer(3)
         elif res == -1:
             new_score = right_counter.get_score() + 1
             right_counter.change_score(new_score)
@@ -196,6 +267,7 @@ def game():
                 return 1
             left_paddle.set_default_pos()
             right_paddle.set_default_pos()
+            # timer(3)
 
         screen.blit(background, (0, 0))
         paddles.draw(screen)
@@ -212,24 +284,22 @@ def game_over_screen(winner):
     font = pygame.font.Font(None, 60)
 
     if winner == -1:
-        game_over_text = font.render('Игра окончена! Игрок 1 победил!', 1, COLORS[0])
+        game_over_text = font.render('Игра окончена! Игрок 1 победил!', 1, COLORS[0], COLORS[2])
     else:
-        game_over_text = font.render('Игра окончена! Игрок 2 победил!', 1, COLORS[0])
+        game_over_text = font.render('Игра окончена! Игрок 2 победил!', 1, COLORS[0], COLORS[2])
     game_over_text_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 200))
     screen.blit(game_over_text, game_over_text_rect)
 
-    restart_question = font.render('Начать заново?', 1, COLORS[0])
+    restart_question = font.render('Начать заново?', 1, COLORS[0], COLORS[2])
     restart_question_rect = restart_question.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 30))
     screen.blit(restart_question, restart_question_rect)
 
-    yes_button = font.render('Да', 1, COLORS[0])
-    yes_button_rect = yes_button.get_rect()
-    yes_button_rect.center = (WIDTH // 2 - 50, HEIGHT // 2 + 30)
+    yes_button = font.render('Да', 1, COLORS[0], COLORS[2])
+    yes_button_rect = yes_button.get_rect(center=(WIDTH // 2 - 50, HEIGHT // 2 + 30))
     screen.blit(yes_button, yes_button_rect)
 
-    no_button = font.render('Нет', 1, COLORS[0])
-    no_button_rect = no_button.get_rect()
-    no_button_rect.center = (WIDTH // 2 + 50, HEIGHT // 2 + 30)
+    no_button = font.render('Нет', 1, COLORS[0], COLORS[2])
+    no_button_rect = no_button.get_rect(center=(WIDTH // 2 + 50, HEIGHT // 2 + 30))
     screen.blit(no_button, no_button_rect)
 
     while True:
@@ -243,14 +313,14 @@ def game_over_screen(winner):
 
             elif event.type == pygame.MOUSEMOTION:
                 if yes_button_rect.collidepoint(event.pos):
-                    yes_button = font.render('Да', 1, COLORS[1])
+                    yes_button = font.render('Да', 1, COLORS[1], COLORS[2])
                 else:
-                    yes_button = font.render('Да', 1, COLORS[0])
+                    yes_button = font.render('Да', 1, COLORS[0], COLORS[2])
 
                 if no_button_rect.collidepoint(event.pos):
-                    no_button = font.render('Нет', 1, COLORS[1])
+                    no_button = font.render('Нет', 1, COLORS[1], COLORS[2])
                 else:
-                    no_button = font.render('Нет', 1, COLORS[0])
+                    no_button = font.render('Нет', 1, COLORS[0], COLORS[2])
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if yes_button_rect.collidepoint(event.pos):
@@ -277,6 +347,8 @@ def main():
     start_menu()
     while True:
         result = game()
+        while result == 0:
+            result = game()
         game_over_screen(result)
 
 
